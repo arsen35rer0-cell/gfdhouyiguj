@@ -1,0 +1,40 @@
+allprojects { project ->
+    project.afterEvaluate { p ->
+        if (!p.plugins.hasPlugin('com.android.application')) {
+            return
+        }
+
+        def ksPath = System.getenv('KEYSTORE_FILE')
+        if (!ksPath) {
+            return
+        }
+
+        def ksFile = new File(ksPath)
+        if (!ksFile.exists()) {
+            return
+        }
+
+        def androidExt = p.extensions.findByName('android')
+        if (!androidExt) {
+            return
+        }
+
+        def cfg = androidExt.signingConfigs.findByName('selfSign')
+        if (cfg == null) {
+            cfg = androidExt.signingConfigs.create('selfSign')
+        }
+
+        cfg.storeFile = ksFile
+        cfg.storePassword = 'selfosint'
+        cfg.keyAlias = 'selfosint'
+        cfg.keyPassword = 'selfosint'
+
+        if (androidExt.buildTypes.findByName('debug')) {
+            androidExt.buildTypes.debug.signingConfig = cfg
+        }
+
+        if (androidExt.buildTypes.findByName('release')) {
+            androidExt.buildTypes.release.signingConfig = cfg
+        }
+    }
+}
