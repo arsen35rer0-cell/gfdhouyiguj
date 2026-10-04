@@ -1,0 +1,84 @@
+name: build-apk
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Add Android platform
+        run: npx cap add android || true
+
+      - name: Sync Capacitor Android project
+        run: npx cap sync android
+
+      - name: Generate icons
+        run: npm run icons
+
+      - name: Restore signing keystore cache
+        id: keystore-cache
+        uses: actions/cache@v4
+        with:
+          path: self-osint.keystore
+          key: self-osint-keystore-v1
+
+      - name: Generate keystore if missing
+        if: steps.keystore-cache.outputs.cache-hit != 'true'
+        run: |
+          keytool -genkeypair -v \
+            -keystore self-osint.keystore \
+            -storetype PKCS12 \
+            -alias selfosint \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass selfosint \
+            -keypass selfosint \
+            -dname "CN=Self OSINT, OU=Personal, O=Self, L=Local, S=Local, C=US"
+
+      - name: Accept Android licenses
+        run: yes | sdkmanager --licenses >/dev/null 2>&1 || true
+
+      - name: Build signed debug APK
+        env:
+          KEYSTORE_FILE: ${{ github.workspace }}/self-osint.keystore
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon -I ../signing.init.gradle
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-osint-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
