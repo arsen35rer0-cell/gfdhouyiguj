@@ -2,18 +2,14 @@ name: build-apk
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,8 +22,15 @@ jobs:
           distribution: zulu
           java-version: 17
 
+      # 👇 ИСПРАВЛЕННЫЙ БЛОК
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: >-
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
+            cmdline-tools;latest
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
@@ -38,13 +41,13 @@ jobs:
       - name: Add Android platform
         run: npx cap add android || true
 
-      - name: Sync Capacitor Android project
+      - name: Sync Capacitor
         run: npx cap sync android
 
       - name: Generate icons
         run: npm run icons
 
-      - name: Restore signing keystore cache
+      - name: Restore keystore cache
         id: keystore-cache
         uses: actions/cache@v4
         with:
@@ -76,7 +79,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon -I ../signing.init.gradle
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: self-osint-apk
