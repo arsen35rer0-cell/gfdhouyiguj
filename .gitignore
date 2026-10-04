@@ -1,0 +1,8 @@
+node_modules/
+dist/
+android/
+ios/
+resources/icon.png
+self-osint.keystore
+*.log
+.DS_Store
