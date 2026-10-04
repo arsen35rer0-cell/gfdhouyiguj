@@ -1,0 +1,8 @@
+{
+  "appId": "app.selfosint.personal",
+  "appName": "Self OSINT",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#0a0a0f"
+  }
+}
