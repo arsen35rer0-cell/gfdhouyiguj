@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <title>Self OSINT</title>
+  <link rel="stylesheet" href="/src/css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="logo">SELF-OSINT</div>
+    <div id="network" class="net">network</div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h1>Проверка себя</h1>
+
+      <label class="consent">
+        <input type="checkbox" id="consent" />
+        Я подтверждаю, что проверяю только свои данные и использую инструмент для личного аудита.
+      </label>
+
+      <input
+        id="identifier"
+        type="text"
+        placeholder="@telegram_username или email"
+        autocomplete="off"
+        spellcheck="false"
+      />
+
+      <input
+        id="hibpKey"
+        type="password"
+        placeholder="HaveIBeenPwned API key (опционально)"
+        autocomplete="off"
+      />
+
+      <div class="row">
+        <button id="scan" type="button">Сканировать</button>
+        <button id="clear" type="button" class="ghost">Очистить</button>
+        <button id="download" type="button" class="ghost">Скачать JSON</button>
+      </div>
+
+      <p class="hint">
+        Приложение проверяет только публичные/разрешённые источники и локальный Telegram-экспорт.
+        Оно не ломает сервисы и не пытается получить чужие приватные данные.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Telegram export</h2>
+      <p>
+        Для поиска своих упоминаний в Telegram сделай официальный экспорт:
+        Telegram Desktop → Настройки → Продвинутые → Экспорт данных → Machine-readable JSON.
+        Затем выбери здесь файл <code>result.json</code>.
+      </p>
+      <input type="file" id="exportFile" accept=".json,application/json" />
+      <button id="exportScan" type="button" class="ghost">Искать в экспорте</button>
+    </section>
+
+    <section id="results"></section>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
